@@ -86,8 +86,8 @@ async def get_votes(dispute_id: str):
             .execute()
         
         # Count pass and fail votes
-        pass_votes = len([v for v in votes.data if v["vote"] == "pass"])
-        fail_votes = len([v for v in votes.data if v["vote"] == "fail"])
+        pass_votes = len([v for v in votes.data if v["vote"] == "1"])
+        fail_votes = len([v for v in votes.data if v["vote"] == "2"])
         
         return {
             "status": "success", 
