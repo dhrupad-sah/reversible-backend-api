@@ -20,4 +20,4 @@ class DepositRequest(BaseModel):
 
 class VoteRequest(BaseModel):
     dispute_id: str
-    vote: bool
+    vote: str
