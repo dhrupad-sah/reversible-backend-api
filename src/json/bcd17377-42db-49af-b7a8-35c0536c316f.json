@@ -1,0 +1,8 @@
+{
+    "bcd17377-42db-49af-b7a8-35c0536c316f": {
+        "seed": "6655a16e4c94b206ce59d5f785d96e408940aa0a4ee8d6aa4e00b69b183674c59f2cf46f07651743fb206569c664a32ca7cd9070f6c52b9fe0a406faabe919a0",
+        "encrypted": true,
+        "auth_tag": "d91723d3cd2af84dff87c00f9b3e7ca9",
+        "iv": "282bff3f0b294c9e7016bc3c96bc4476"
+    }
+}
