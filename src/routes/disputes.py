@@ -30,7 +30,7 @@ async def raise_dispute(wallet: WalletType, request: DisputeRequest):
         # Create new dispute entry
         dispute_data = {
             "transactionId": request.transaction_id,
-            "intendedRecipient": request.to_wallet,
+            "to_wallet": request.to_wallet,
             "proof_title": request.proofTitle,
             "proof_content": request.proofContent,
             "verdict": False,
