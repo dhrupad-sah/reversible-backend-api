@@ -1,8 +1,0 @@
-{
-    "3b3d177f-e68a-4775-8172-2b4253f72c66": {
-        "seed": "32ccf1738c0d7fe9d0d21201be64caf4f211f887337631fd23f3c424e3eeb51c52390c82817287cb53f41e7d9af06dd2a3e57bcb8aee99a19b006716443f225d",
-        "encrypted": true,
-        "auth_tag": "28e4f103e50c5c9319a5295868839841",
-        "iv": "d9968bf63462c2e40f9246c834dd2e90"
-    }
-}
