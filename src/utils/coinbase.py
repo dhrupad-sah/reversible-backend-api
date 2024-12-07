@@ -3,6 +3,7 @@ from src.config.env import Env
 from pydantic import BaseModel
 from src.utils.contract import ERC20R_ADDRESS, ERC20R_ABI, GOVERNANCE_ADDRESS, GOVERNANCE_ABI
 from cdp.smart_contract import SmartContract
+import os  # Add this import at the top
 
 
 api_key_name = Env.COINBASE_API_KEY_NAME
@@ -23,8 +24,15 @@ def create_coinbase_wallet_address():
         address = wallet.default_address
         faucet_tx = wallet.faucet()
         faucet_tx.wait()
-        filePath = "src/json/" + wallet.id + ".json"
-        wallet.save_seed(filePath, encrypt=True)
+        
+        # Create json directory if it doesn't exist
+        json_dir = os.path.join("src", "json")
+        os.makedirs(json_dir, exist_ok=True)
+        
+        # Use os.path.join for proper path handling
+        file_path = os.path.join(json_dir, f"{wallet.id}.json")
+        wallet.save_seed(file_path, encrypt=True)
+        
         return {"success": True, "address": address.address_id, "wallet_id": wallet.id, "network_id": wallet.network_id}
     except Exception as e:
         return {"success": False, "error": str(e)}
