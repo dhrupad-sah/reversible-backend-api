@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from ..types.transaction import DisputeRequest
 from ..db.supabase import supabase_client
-from ..utils.coinbase import call_contract_function, WalletType
+from ..utils.coinbase import call_contract_function, WalletType, read_contract_function, read_governance_function
 
 router = APIRouter(
     prefix="/disputes",
@@ -18,6 +18,9 @@ async def raise_dispute(wallet: WalletType, request: DisputeRequest):
         dispute_result = call_contract_function(wallet, "raiseDispute", {"index": transaction_index.data[0].get("index"), "from": wallet.address_id, "to": request.to_wallet})
         if dispute_result.get('success') != True:
             raise HTTPException(status_code=500, detail="Dispute failed")
+        
+        dispute_count = read_governance_function(wallet, "getDisputeCount", {})
+        print(dispute_count)
         # Update transaction state to "disputed"
         transaction_update = supabase_client.table("transactions")\
             .update({"state": "disputed"})\
@@ -30,7 +33,8 @@ async def raise_dispute(wallet: WalletType, request: DisputeRequest):
             "intendedRecipient": request.to_wallet,
             "proof_title": request.proofTitle,
             "proof_content": request.proofContent,
-            "verdict": False
+            "verdict": False,
+            "dispute_count": dispute_count.get("result")
         }
         supabase_client.table("disputes").insert(dispute_data).execute()
         

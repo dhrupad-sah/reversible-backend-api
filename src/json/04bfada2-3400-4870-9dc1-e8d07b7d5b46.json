@@ -1,0 +1,8 @@
+{
+    "04bfada2-3400-4870-9dc1-e8d07b7d5b46": {
+        "seed": "6d0dd2c83ed66cc0b31553c026043eb0369d37d825f837a1230ec5f4a98afe9971e496212c95b1ab8d67fafe2439af456fb99d4a55b6101863f560a166e212a1",
+        "encrypted": true,
+        "auth_tag": "cac72ce665809dd6fa4f4f12fcbc7e0c",
+        "iv": "7daeaceecd8f85aa060d9a6bda2113df"
+    }
+}

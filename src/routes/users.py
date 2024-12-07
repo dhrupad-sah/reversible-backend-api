@@ -44,9 +44,12 @@ async def claim_tokens(wallet: WalletType, request: ClaimRewardsRequest):
             .select("index, from_wallet")\
             .eq("id", request.transaction_id)\
             .execute()
+        print(transaction_index.data[0].get("index"))
+        print(transaction_index.data[0].get("from_wallet"))
         claim_result = call_contract_function(wallet, "withdrawLockedTokens", {"index": transaction_index.data[0].get("index"), "from": transaction_index.data[0].get("from_wallet")})
         if claim_result.get('success') != True:
             raise HTTPException(status_code=500, detail="Claim rewards failed")
         return {"status": "success", "message": "Tokens claimed successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 
+    
