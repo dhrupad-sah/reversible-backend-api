@@ -15,10 +15,18 @@ async def get_user_balance(wallet_address: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/get-user-transactions/{wallet_address}")
-async def get_user_transactions(wallet_address: str):
+@router.get("/get-user-sent-transactions/{wallet_address}")
+async def get_user_sent_transactions(wallet_address: str):
     try:
         user_transactions = supabase_client.table("transactions").select("*").eq("from_wallet", wallet_address).execute()
+        return {"status": "success", "data": user_transactions.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/get-user-received-transactions/{wallet_address}")
+async def get_user_received_transactions(wallet_address: str):
+    try:
+        user_transactions = supabase_client.table("transactions").select("*").eq("to_wallet", wallet_address).execute()
         return {"status": "success", "data": user_transactions.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
