@@ -18,7 +18,7 @@ async def get_user_balance(wallet_address: str):
 @router.get("/get-user-transactions/{wallet_address}")
 async def get_user_transactions(wallet_address: str):
     try:
-        user_transactions = supabase_client.table("transactions").select("*").eq("wallet_address", wallet_address).execute()
+        user_transactions = supabase_client.table("transactions").select("*").eq("from_wallet", wallet_address).execute()
         return {"status": "success", "data": user_transactions.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -53,3 +53,24 @@ async def claim_tokens(wallet: WalletType, request: ClaimRewardsRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 
     
+@router.get("/get-user-disputes/{wallet_address}")
+async def get_user_disputes(wallet_address: str):
+    try:
+        # First get all transactions where user is sender
+        user_transactions = supabase_client.table("transactions")\
+            .select("id")\
+            .eq("from_wallet", wallet_address)\
+            .execute()
+
+        # Get transaction IDs
+        transaction_ids = [t["id"] for t in user_transactions.data]
+        
+        # Get all disputes for these transactions
+        disputes = supabase_client.table("disputes")\
+            .select("*")\
+            .in_("transactionId", transaction_ids)\
+            .execute()
+
+        return {"status": "success", "data": disputes.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
