@@ -57,3 +57,27 @@ async def get_dispute(dispute_id: str):
         return {"status": "success", "data": dispute.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/getVotes/{dispute_id}")
+async def get_votes(dispute_id: str):
+    try:
+        # Get all votes for this dispute
+        votes = supabase_client.table("judges")\
+            .select("vote")\
+            .eq("dispute_id", dispute_id)\
+            .execute()
+        
+        # Count pass and fail votes
+        pass_votes = len([v for v in votes.data if v["vote"] == "pass"])
+        fail_votes = len([v for v in votes.data if v["vote"] == "fail"])
+        
+        return {
+            "status": "success", 
+            "data": {
+                "pass_votes": pass_votes,
+                "fail_votes": fail_votes
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
