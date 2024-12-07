@@ -50,3 +50,10 @@ async def get_disputes():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@router.get("/get-dispute/{dispute_id}")
+async def get_dispute(dispute_id: str):
+    try:
+        dispute = supabase_client.table("disputes").select("*").eq("id", dispute_id).execute()
+        return {"status": "success", "data": dispute.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
