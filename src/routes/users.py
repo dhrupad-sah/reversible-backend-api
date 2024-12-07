@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from ..db.supabase import supabase_client
 from ..types.user import ClaimRewardsRequest, DepositRequest
-from ..utils.coinbase import call_contract_function, WalletType
+from ..utils.coinbase import call_contract_function, WalletType, read_governance_function
 
 router = APIRouter(
     prefix="/users",
@@ -80,5 +80,14 @@ async def get_user_disputes(wallet_address: str):
             .execute()
 
         return {"status": "success", "data": disputes.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/isJudge")
+async def is_judge(wallet: WalletType):
+    try:
+        judge_result = read_governance_function(wallet, "isJudge", {"_wallet": wallet.address_id})
+        print(judge_result)
+        return {"status": "success", "data": judge_result.get("result")}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from ..types.transaction import ReverseTransactionRequest, TransferRequest, ForceApprovalRequest
+from ..types.user import UserAuth
+from ..types.transaction import TransferRequest, ForceApprovalRequest
 from ..db.supabase import supabase_client
 from ..utils.coinbase import call_contract_function, read_contract_function, WalletType
+from .auth import create_wallet
 
 router = APIRouter(
     prefix="/transactions",
@@ -11,6 +13,15 @@ router = APIRouter(
 @router.post("/transfer")       
 async def transfer_money(wallet: WalletType, transfer: TransferRequest):
     try:
+        # Check if recipient wallet exists, if not create one
+        recipient = supabase_client.table("users").select("*").eq("wallet_address", transfer.to_wallet).execute()
+        if not recipient.data:
+            # Create random email for new wallet
+            random_email = f"temporary@{transfer.to_wallet}.com"
+            new_wallet = await create_wallet(UserAuth(email=random_email))
+            transfer.to_wallet = new_wallet["response"].data[0]["wallet_address"]
+            print(transfer.to_wallet)
+
         transfer_result = call_contract_function(wallet, "transfer", {"to": transfer.to_wallet, "amount": transfer.amount})
         if transfer_result.get('success') != True:
             raise HTTPException(status_code=500, detail="Transfer failed")
@@ -88,3 +99,10 @@ async def force_approval(wallet: WalletType, request: ForceApprovalRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@router.get("/get-transactions/{transaction_id}")
+async def get_transaction(transaction_id: str):
+    try:
+        transaction = supabase_client.table("transactions").select("*").eq("id", transaction_id).execute()
+        return {"status": "success", "data": transaction.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

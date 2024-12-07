@@ -20,6 +20,11 @@ ERC20R_ABI = [
 				"internalType": "address",
 				"name": "_judgeManager",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_platformWallet",
+				"type": "address"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -73,6 +78,11 @@ ERC20R_ABI = [
 	{
 		"inputs": [],
 		"name": "OnlySenderCanRaiseDispute",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "SenderAndAddressMustNotBeSame",
 		"type": "error"
 	},
 	{
@@ -148,6 +158,62 @@ ERC20R_ABI = [
 			}
 		],
 		"name": "FastWithdrawAllowed",
+		"type": "event"
+	},
+	{
+		"anonymous": False,
+		"inputs": [
+			{
+				"indexed": True,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": True,
+				"internalType": "address",
+				"name": "platformWallet",
+				"type": "address"
+			},
+			{
+				"indexed": False,
+				"internalType": "uint256",
+				"name": "platformFee",
+				"type": "uint256"
+			},
+			{
+				"indexed": False,
+				"internalType": "uint256",
+				"name": "judgeFee",
+				"type": "uint256"
+			}
+		],
+		"name": "FeesDistributed",
+		"type": "event"
+	},
+	{
+		"anonymous": False,
+		"inputs": [
+			{
+				"indexed": False,
+				"internalType": "address[]",
+				"name": "judges",
+				"type": "address[]"
+			},
+			{
+				"indexed": False,
+				"internalType": "uint256",
+				"name": "feePerJudge",
+				"type": "uint256"
+			},
+			{
+				"indexed": False,
+				"internalType": "uint256",
+				"name": "totalAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "JudgeFeesDistributed",
 		"type": "event"
 	},
 	{
@@ -290,6 +356,45 @@ ERC20R_ABI = [
 	},
 	{
 		"inputs": [],
+		"name": "BASIS_POINTS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "JUDGE_FEE_BPS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "PLATFORM_FEE_BPS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "_name",
 		"outputs": [
 			{
@@ -427,6 +532,30 @@ ERC20R_ABI = [
 			}
 		],
 		"name": "changeLockPeriod",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address[]",
+				"name": "humanJudges",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalFeeAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "distributeJudgeFees",
 		"outputs": [
 			{
 				"internalType": "bool",
@@ -621,6 +750,19 @@ ERC20R_ABI = [
 	{
 		"inputs": [],
 		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "platformWallet",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -855,11 +997,11 @@ ERC20R_ABI = [
 		],
 		"stateMutability": "nonpayable",
 		"type": "function"
-        }
-    ]
+	}
+]
 
-ERC20R_ADDRESS = "0x93075Ed987A4D4413aD2d6693f3D274B0772E4a4"
-GOVERNANCE_ADDRESS = "0x3BaE9053ACeE2e504b6a2D4433C0f8161AA7E8BE"
+ERC20R_ADDRESS = "0x857E1339Fe7196Ea68558886F18E14C7C5a8B1B6"
+GOVERNANCE_ADDRESS = "0x06B7d34C8105af0C7Ce638Ab0497f72d5a8a7eCF"
 
 GOVERNANCE_ABI = [
 	{
@@ -1026,6 +1168,11 @@ GOVERNANCE_ABI = [
 				"internalType": "address",
 				"name": "_judge",
 				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "_isHuman",
+				"type": "bool"
 			}
 		],
 		"name": "addJudge",
@@ -1126,9 +1273,9 @@ GOVERNANCE_ABI = [
 				"type": "uint256"
 			},
 			{
-				"internalType": "bool",
-				"name": "resolved",
-				"type": "bool"
+				"internalType": "enum IJudgeManager.DisputeState",
+				"name": "state",
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",
@@ -1193,8 +1340,65 @@ GOVERNANCE_ABI = [
 				"type": "uint256"
 			},
 			{
+				"internalType": "enum IJudgeManager.DisputeState",
+				"name": "state",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_disputeId",
+				"type": "uint256"
+			}
+		],
+		"name": "getHumanJudgesForDispute",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getJudgeAtIndex",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "isHumanJudge",
+		"outputs": [
+			{
 				"internalType": "bool",
-				"name": "resolved",
+				"name": "",
 				"type": "bool"
 			}
 		],
@@ -1228,6 +1432,25 @@ GOVERNANCE_ABI = [
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "judgeList",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -1286,9 +1509,9 @@ GOVERNANCE_ABI = [
 				"type": "uint256"
 			},
 			{
-				"internalType": "bool",
-				"name": "_support",
-				"type": "bool"
+				"internalType": "enum IJudgeManager.DisputeState",
+				"name": "_vote",
+				"type": "uint8"
 			}
 		],
 		"name": "voteAndResolve",

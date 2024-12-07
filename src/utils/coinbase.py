@@ -98,3 +98,21 @@ def read_governance_function(wallet: WalletType, function_name: str, function_ar
         return {"success": True, "result": uint16}
     except Exception as e:
         return {"success": False, "error": str(e)}
+    
+# def read_governance_bool_function(wallet: WalletType, function_name: str, function_args: dict):
+#     try:
+#         Cdp.configure_from_json("src/utils/cdp_api_key.json")
+#         user_wallet = Wallet.fetch(wallet.wallet_id)
+#         filePath = "src/json/" + wallet.wallet_id + ".json"
+#         user_wallet.load_seed(filePath)
+        
+#         uint16 = SmartContract.read(
+#             wallet.network_id,
+#             GOVERNANCE_ADDRESS,
+#             function_name,
+#             GOVERNANCE_ABI,
+#             function_args
+#         )
+#         return {"success": True, "result": uint16}
+#     except Exception as e:
+#         return {"success": False, "error": str(e)}
