@@ -96,7 +96,11 @@ def reject_reverse_transaction(request: ReverseTransactionRequest):
 async def vote(wallet: WalletType, request: VoteRequest):
     try:
         dispute_count = supabase_client.table("disputes").select("dispute_count").eq("id", request.dispute_id).execute()
-        vote_result = call_governance_function(wallet, "voteAndResolve", {"_disputeId": dispute_count.data[0].get("dispute_count"), "_support": request.vote})
+        # Convert string vote to enum value
+        vote_result = call_governance_function(wallet, "voteAndResolve", {
+            "_disputeId": dispute_count.data[0].get("dispute_count"), 
+            "_vote": request.vote
+        })
         if vote_result.get('success') != True:
             raise HTTPException(status_code=500, detail="Vote failed")
         # Add vote to judges table
@@ -113,8 +117,8 @@ async def vote(wallet: WalletType, request: VoteRequest):
             .execute()
         
         # Count pass votes
-        pass_votes = len([v for v in votes.data if v["vote"] == "pass"])
-        fail_votes = len([v for v in votes.data if v["vote"] == "fail"])
+        pass_votes = len([v for v in votes.data if v["vote"] == "1"])
+        fail_votes = len([v for v in votes.data if v["vote"] == "2"])
         total_votes = 5
         
         # Check if passes threshold

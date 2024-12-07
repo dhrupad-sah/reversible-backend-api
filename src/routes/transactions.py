@@ -72,28 +72,6 @@ async def force_approval(wallet: WalletType, request: ForceApprovalRequest):
         fast_withdraw_result = call_contract_function(wallet, "fastWithdraw", {"index": transaction_index.data[0].get("index"), "from": wallet.address_id, "to": request.to_wallet})
         if fast_withdraw_result.get('success') != True:
             raise HTTPException(status_code=500, detail="Fast withdraw failed")
-        transaction = supabase_client.table("transactions").select("*").eq("id", request.transaction_id).execute()
-
-        recipient = request.to_wallet
-        amount = transaction.data[0]["amount"]
-
-        recipient_balance = supabase_client.table("users").select("rb_value, nrb_value").eq("wallet_address", recipient).execute()
-
-        current_rb = recipient_balance.data[0]["rb_value"]
-        current_nrb = recipient_balance.data[0]["nrb_value"]
-
-        supabase_client.table("users")\
-            .update({
-                "rb_value": current_rb - amount,
-                "nrb_value": current_nrb + amount
-            })\
-            .eq("wallet_address", recipient)\
-            .execute()
-
-        transaction_update = supabase_client.table("transactions")\
-            .update({"state": "completed"})\
-            .eq("id", request.transaction_id)\
-            .execute()
         
         return {"status": "success", "message": "Transaction force approved"}
     except Exception as e:

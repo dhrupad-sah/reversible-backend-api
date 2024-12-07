@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from enum import Enum
 
 class UserAuth(BaseModel):
     email: str

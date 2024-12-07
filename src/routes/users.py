@@ -57,6 +57,28 @@ async def claim_tokens(wallet: WalletType, request: ClaimRewardsRequest):
         claim_result = call_contract_function(wallet, "withdrawLockedTokens", {"index": transaction_index.data[0].get("index"), "from": transaction_index.data[0].get("from_wallet")})
         if claim_result.get('success') != True:
             raise HTTPException(status_code=500, detail="Claim rewards failed")
+        
+        transaction = supabase_client.table("transactions").select("*").eq("id", request.transaction_id).execute()
+
+        amount = transaction.data[0]["amount"]
+
+        recipient_balance = supabase_client.table("users").select("rb_value, nrb_value").eq("wallet_address", wallet.address_id).execute()
+
+        current_rb = recipient_balance.data[0]["rb_value"]
+        current_nrb = recipient_balance.data[0]["nrb_value"]
+
+        supabase_client.table("users")\
+            .update({
+                "rb_value": current_rb - amount,
+                "nrb_value": current_nrb + amount
+            })\
+            .eq("wallet_address", wallet.address_id)\
+            .execute()
+
+        transaction_update = supabase_client.table("transactions")\
+            .update({"state": "completed"})\
+            .eq("id", request.transaction_id)\
+            .execute()
         return {"status": "success", "message": "Tokens claimed successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 
@@ -86,7 +108,7 @@ async def get_user_disputes(wallet_address: str):
 @router.post("/isJudge")
 async def is_judge(wallet: WalletType):
     try:
-        judge_result = read_governance_function(wallet, "isJudge", {"_wallet": wallet.address_id})
+        judge_result = read_governance_function(wallet, "isJudge", {"_account": wallet.address_id})
         print(judge_result)
         return {"status": "success", "data": judge_result.get("result")}
     except Exception as e:
