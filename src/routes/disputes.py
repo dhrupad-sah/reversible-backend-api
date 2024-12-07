@@ -21,8 +21,6 @@ async def raise_dispute(wallet: WalletType, request: DisputeRequest):
             .execute()
         dispute_result = call_contract_function(wallet, "raiseDispute", {"index": transaction_index.data[0].get("index"), "from": wallet.address_id, "to": request.to_wallet})
         await asyncio.sleep(5)  # Wait for 5 seconds
-        if dispute_result.get('success') != True:
-            raise HTTPException(status_code=500, detail="Dispute failed")
         
         dispute_count = read_governance_function(wallet, "getDisputeCount", {})
         # Update transaction state to "disputed"
