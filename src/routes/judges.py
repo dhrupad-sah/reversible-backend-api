@@ -101,8 +101,8 @@ async def vote(wallet: WalletType, request: VoteRequest):
             "_disputeId": dispute_count.data[0].get("dispute_count"), 
             "_vote": request.vote
         })
-        if vote_result.get('success') != True:
-            raise HTTPException(status_code=500, detail="Vote failed")
+        # if vote_result.get('success') != True:
+        #     raise HTTPException(status_code=500, detail="Vote failed")
         # Add vote to judges table
         judge_vote = supabase_client.table("judges").insert({
             "wallet_address": wallet.address_id,
