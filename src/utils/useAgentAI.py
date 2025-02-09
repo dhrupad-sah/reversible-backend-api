@@ -5,7 +5,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage, AIMessage
 import requests
 import os
-
+import openai
 
 probabilitySystemPrompt = """You are an agent, and based on evidence that a particular transaction was accidental or not, you have to determine if the transaction is accidental or not. If the transaction was accidental, return 1, else, return 2."""
 
@@ -138,6 +138,20 @@ def useAgent(agentExecutor: any, systemPrompt: str, inputPrompt: str):
             output = chunk["tools"]["messages"][0].content
             return output
 
+def useGaia(system_prompt: str, user_prompt: str):
+   client = openai.OpenAI(
+      base_url="https://qwen72b.gaia.domains/v1", 
+      api_key=os.getenv("GAIA_API_KEY")
+    )
+   
+   response = client.chat.completions.create(
+      model="qwen72b",
+      messages=[
+         {"role": "system", "content": system_prompt},
+         {"role": "user", "content": user_prompt}
+      ]
+   )
+   return response.choices[0].message.content
 
 def agentVerdict(agentExecutor: any, amount: int, senderWalletAddress: str, receiverWalletAddress: str, chainName: str, writtenProofTitle: str, writtenProofContent: str, intendedRecepientWalletAddress: str):
   senderTransactionHistory = getTransactionHistory(chainName=chainName, walletAddress=senderWalletAddress)
@@ -152,16 +166,17 @@ def agentVerdict(agentExecutor: any, amount: int, senderWalletAddress: str, rece
   inputPrompt = fraudulentCheckInput.format(senderTransactionHistory=senderTransactionHistory, amount=amount, receiverTransactionHistory=receiverTransactionHistory, senderTransactionSummary=senderTransactionSummary, receiverTransactionSummary=receiverTransactionSummary, senderWalletAddress=senderWalletAddress, receiverWalletAddress=receiverWalletAddress, writtenProofTitle=writtenProofTitle, writtenProofContent=writtenProofContent, intendedRecepientWalletAddress=intendedRecepientWalletAddress, mismatches=mismatches)
   
   response = useAgent(agentExecutor=agentExecutor, systemPrompt=systemPrompt, inputPrompt=inputPrompt)
+  response_2 = useGaia(system_prompt=systemPrompt, user_prompt=inputPrompt)
   
-  return response
+  return response, response_2
 
 
 def agentVerdictProbability(agentExecutor: any, agentVerdict: str):
   systemPrompt = probabilitySystemPrompt
   userPrompt = probabilityUserPrompt.format(evidence=agentVerdict)
   response = useAgent(agentExecutor=agentExecutor, systemPrompt=systemPrompt, inputPrompt=userPrompt)
-  
-  return response
+  response_2 = useGaia(system_prompt=systemPrompt, user_prompt=userPrompt)
+  return response, response_2
 
 
 
@@ -170,6 +185,7 @@ def useAIJudge(chainName: any, amount: int, senderAddress: str, receiverAddress:
   agentExecutor = initialize_agent()
   agentResponse = agentVerdict(agentExecutor=agentExecutor, amount=amount, senderWalletAddress=senderAddress, receiverWalletAddress=receiverAddress, chainName=chainName, intendedRecepientWalletAddress=intendedRecipientWalletAddress, writtenProofTitle=writtenProofTitle, writtenProofContent=writtenProofContent)
   
-  verdict = agentVerdictProbability(agentExecutor=agentExecutor, agentVerdict=agentResponse)
+  verdict, verdict_2 = agentVerdictProbability(agentExecutor=agentExecutor, agentVerdict=agentResponse)
   print("verdict is : ", verdict)
-  return verdict
+  print("verdict_2 is : ", verdict_2)
+  return verdict, verdict_2

@@ -40,8 +40,7 @@ async def raise_dispute(wallet: WalletType, request: DisputeRequest):
         }
         dispute_result = supabase_client.table("disputes").insert(dispute_data).execute()
 
-        ai_decision_1 = useAIJudge("base-sepolia", transaction_index.data[0].get("amount"), wallet.address_id, request.to_wallet,"", request.proofTitle, request.proofContent) 
-        ai_decision_2 = useAIJudge("base-sepolia", transaction_index.data[0].get("amount"), wallet.address_id, request.to_wallet,"", request.proofTitle, request.proofContent)
+        ai_decision_1, ai_decision_2 = useAIJudge("base-sepolia", transaction_index.data[0].get("amount"), wallet.address_id, request.to_wallet,"", request.proofTitle, request.proofContent) 
         wallet_1 = await create_wallet(UserAuth(email="ai-1@judge.com"))
         wallet_2 = await create_wallet(UserAuth(email="ai-2@judge.com"))
         wallet_1 = WalletType(address_id=wallet_1["response"].data[0].get("wallet_address"), wallet_id=wallet_1["response"].data[0].get("wallet_id"), network_id=wallet_1["response"].data[0].get("network_id"))
